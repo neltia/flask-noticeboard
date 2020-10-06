@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <a href="/write"><button type="button" class="btn btn-outline-secondary btn-sm float-right mb-2">
+        글쓰기
+    </button></a>
+    <table class="table table-sm table-borered">
+        <thead class="text-center">
+            <tr>
+                <th>번호</th>
+                <th>제목</th>
+                <th>작성자</th>
+                <th>작성일</th>
+                <th>등불수</th> <!-- 추천 수 -->
+            </tr>
+        </thead>
+        <tbody class="text-center">
+            {% for item in lists %}
+            <tr>
+                <td>{{ loop.revindex }}</td>
+                <td class="text-left"><a class="text-reset" href="{{  url_for('board_view', idx=item._id)}}">{{ item['title'] }}</a></td>
+                <td>{{ item['name'] }}</td>
+                <td>{{ item['date']|formatdatetime }}</td>
+                <td>{{ item['view'] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
