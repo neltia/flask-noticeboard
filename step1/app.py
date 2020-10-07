@@ -42,7 +42,6 @@ def main_page():
 
 @app.route("/view/<idx>")
 def board_view(idx):
-    # idx = request.args.get("idx")
     if idx is not None:
         board = mongo.db.wt_board
         data = board.find_one({"_id": ObjectId(idx)})
