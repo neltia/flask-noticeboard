@@ -1,0 +1,43 @@
+<header>
+    <div class="container" style="color:black">
+        <img src="/static/images/favicon.png" width="25" class="img-fluid mx-5"/>
+        <a class="text-reset" href="/list?page=1&search=-1&keyword=">
+            <h3><b>소곤소곤 갤러리</b></h3>
+        </a>
+    </div>
+</header>
+
+<nav class="navbar navbar-expand-md navbar-dark" style="background-color: bisque;">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#myNavbar">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="navbar-collapse collapse font-weight-bold" id="myNavbar">
+        <hr class="d-sm-flex d-md-flex d-lg-none" color="gray">
+        <ul class="nav navbar-nav ml-auto text-">
+            {% if session['logged_in'] %}
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="/index">
+                    내 정보
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="/index">
+                    로그아웃
+                </a>
+            </li>
+            {% else %}
+            <li class="nav-item">
+                <a class="nav-link text-dark shadow-sm" href="/register">
+                    회원가입
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark shadow-sm" href="/login">
+                    로그인
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>

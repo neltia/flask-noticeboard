@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <hr/>
+    <div name="title">
+        <h4>{{ result.title }}</h4>
+        <small><b>{{ result.name }}</b></small>
+        <br><p>{{ result.date|formatdatetime }} 조회 {{ result.view }}</span></p>
+    </div>
+
+    <hr/>
+
+    <div name="contents">
+        {{ result.contents }}
+    </div>
+</div>
+{% endblock %}
