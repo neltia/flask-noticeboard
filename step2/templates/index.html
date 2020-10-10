@@ -2,7 +2,7 @@
 {% block content %}
 <div class="container">
     <div class="form-inline mb-2 float-right">
-        <select name="search" id="search" class="form-control form-control-sm col-md-auto m-2">
+        <select name="search" id="search" class="form-control form-control-sm">
             <option value="-1" {% if search == '' or search == -1 %} selected {% endif %}>검색대상</option>
             <option value="0" {% if search == 0 %} selected {% endif %}>제목</option>
             <option value="1" {% if search == 1 %} selected {% endif %}>내용</option>
