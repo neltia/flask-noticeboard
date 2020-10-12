@@ -16,8 +16,8 @@ import math
 from flask_wtf import FlaskForm
 from wtforms import StringField
 from wtforms import PasswordField
+from wtforms.widgets import TextArea
 from wtforms.fields.html5 import EmailField
-from wtforms.fields.html5 import IntegerField
 from wtforms.validators import DataRequired, Email
 
 # Config setting
@@ -31,11 +31,16 @@ app.config['SECRET_KEY'] = myHash
 mongo = PyMongo(app)
 
 
-class ContactForm(FlaskForm):
+class personForm(FlaskForm):
     name = StringField("사용자 이름",  [DataRequired()])
     email = EmailField('이메일 주소', [DataRequired(), Email()])
     pw = PasswordField("비밀번호",  [DataRequired()])
-    code = StringField('인증코드', [DataRequired()])
+    pw2 = PasswordField("비밀번호 확인",  [DataRequired()])
+
+
+class writeForm(FlaskForm):
+    title = StringField("제목",  [DataRequired()])
+    content = StringField("내용", widget=TextArea())
 
 
 @app.errorhandler(404)
@@ -52,7 +57,7 @@ def format_datetime(timestamp):
         now_timestamp
     )
     timestamp = datetime.fromtimestamp((int(timestamp) / 1000)) + offset
-    return timestamp.strftime("%Y-%m-%d %H:%M:%S")
+    return timestamp.strftime("%Y-%m-%d %H:%M")
 
 
 @app.route("/")
@@ -91,9 +96,9 @@ def main_page():
     block_last = math.ceil(block_start + (block_size-1))
 
     return render_template(
-        "index.html", 
-        lists=datas, 
-        limit=limit, 
+        "index.html",
+        lists=datas,
+        limit=limit,
         page=page,
         block_start=block_start,
         block_last=block_last,
@@ -123,10 +128,11 @@ def board_view(idx):
 
 @app.route("/write", methods=["GET", "POST"])
 def board_write():
+    form = writeForm()
     if request.method == "POST":
         name = request.form.get("name")
         title = request.form.get("title")
-        contents = request.form.get("contents")
+        contents = request.form.get("content")
         print(name, title, contents)
 
         board = mongo.db.wt_board
@@ -143,28 +149,35 @@ def board_write():
         }
         x = board.insert_one(post)
         return redirect(url_for("board_view", idx=x.inserted_id))
+    elif request.method == "GET":
+        if session.get('logged_in'):
+            return render_template("write.html", form=form, name=session["name"])
+        else:
+            flash("회원가입 후 작성할 수 있습니다.")
+            return redirect(url_for("member_new"))
     else:
-        return render_template("write.html")
+        abort(404)
 
 
 @app.route("/register", methods=["GET", "POST"])
 def member_new():
+    form = personForm()
     if request.method == "POST":
         name = request.form.get("name", type=str)
         email = request.form.get("email", type=str)
-        pass1 = request.form.get("pass", type=str)
-        pass2 = request.form.get("pass2", type=str)
+        pass1 = request.form.get("pw", type=str)
+        pass2 = request.form.get("pw2", type=str)
         
         if pass1 != pass2:
-            flash("비밀번호가 일치하지 않습니다.")
-            return render_template("register.html")
+            flash("아이디나 비밀번호가 올바르지 않습니다.")
+            return render_template("register.html", form=form)
         
         cur_utc_time = round(datetime.utcnow().timestamp() * 1000)
         wt_members = mongo.db.wt_members
         post = {
             "name": name,
             "email": email,
-            "pass": pass1,
+            "pass": hashlib.sha512(pass1.encode()).hexdigest(),
             "registerdate": cur_utc_time,
             "logintime": "",
             "logincount": 0,
@@ -173,35 +186,43 @@ def member_new():
         wt_members.insert_one(post)
         return redirect(url_for("member_login"))
     else:
-        form = ContactForm()
         return render_template("register.html", form=form)
 
 
 @app.route("/login", methods=["GET", "POST"])
 def member_login():
+    form = personForm()
     if request.method == "POST":
         email = request.form.get("email")
-        password = request.form.get("pass")
+        password = request.form.get("pw")
 
-        members = mongo.db.members
+        members = mongo.db.wt_members
         data = members.find_one({"email": email})
 
         if data is None:
             flash("회원정보가 없습니다.")
-            return redirect(url_for("member_join"))
+            return redirect(url_for("member_new"))
         else:
-            if data.get("pass") == password:
+            if data.get("pass") == hashlib.sha512(password.encode()).hexdigest():
                 session["email"] = email
                 session["name"] = data.get("name")
                 session["id"] = str(data.get("_id"))
-                session.permanent = True
-                return redirect(url_for("lists"))
+                session['logged_in'] = True
+                return redirect(url_for("main_page"))
             else:
-                flash("비밀번호가 일치하지 않습니다.")
+                flash("아이디나 비밀번호가 올바르지 않습니다.")
                 return redirect(url_for("member_login"))
     else:
-        return render_template("login.html")
+        return render_template("login.html", form=form)
 
+
+@app.route("/logout", methods=["GET", "POST"])
+def member_logout():
+    del session["name"]
+    del session["id"]
+    del session["email"]
+    session['logged_in'] = False
+    return redirect(url_for("member_login"))
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)

@@ -4,37 +4,41 @@
 {% if not session['logged_in'] %}
     <div class="container">
         <div class="row">
-            <div class="col-md-6 offset-md-3">
-                <form action="" method="POST" autocomplete="off" role="form" autocomplete="off">
-                    {{ form.csrf_token }}
-                    <div class="form-group">
-                        {{ form.name.label.text }}
-                        {{ form.name(class="form-control", _id="name", type="id", type="text") }}
-                        <small id="idHelpInline" class="text-muted">
-                            4-20 길이 영문 또는 숫자를 입력하세요
-                        </small>
-                    </div>
-                    <div class="form-group">
-                        {{ form.pw.label.text }}
-                        {{ form.pw(class="form-control") }}
-                    </div>
-                    <div class="form-group">
-                        {{ form.email.label.text }}
-                        {{ form.email(class="form-control") }}
-                    </div>
-                    <div class="form-group">
-                        이메일 인증코드
-                        {{ form.code(class="form-control") }}
-                    </div>
-                    <div class="row pt-3">
-                        <div class="col-md-12">
-                            <input class="btn btn-md btn-outline-dark float-right" type="submit" value="가입하기">
+            <div class="col-md-6 offset-md-3 d-flex p-3 flex-column">
+                <header class="masthead mb-auto">
+                </header>
+
+                <main role="main" class="inner cover">
+                    <form action="" method="POST" autocomplete="off" role="form">
+                        {{ form.csrf_token }}
+                        <div class="form-group">
+                            {{ form.name.label.text }}
+                            {{ form.name(class="form-control", _id="name") }}
                         </div>
-                    </div>
-                </form>
+                        <div class="form-group">
+                            {{ form.email.label.text }}
+                            {{ form.email(class="form-control") }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.pw.label.text }}
+                            {{ form.pw(class="form-control") }}
+                        </div>
+                        <div class="form-group">
+                            {{ form.pw2.label.text }}
+                            {{ form.pw2(class="form-control") }}
+                        </div>
+                        <div class="row pt-3">
+                            <div class="col-md-12">
+                                <input class="btn btn-md btn-outline-dark float-right" type="submit" value="가입하기">
+                            </div>
+                        </div>
+                    </form>
+                </main>
+
+                <footer class="mastfoot mt-auto">
+                </footer>
             </div>
         </div>
     </div>
 {% endif %}
-
 {% endblock %}

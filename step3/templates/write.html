@@ -2,18 +2,21 @@
 {% block content %}
 <table class="table table-sm table-borered">
     <form name="form" method="POST" action="">
+        {{ form.csrf_token }}
         <tbody>
             <tr>
                 <td>작성자</td>
-                <td><input class="form-control" type="text" name="name"></td>
+                <td><input class="form-control" type="text" name="name" value="{{ name }}" readonly></td>
             </tr>
             <tr>
-                <td>제목</td>
-                <td><input class="form-control" type="text" cols="80" name="title"></td>
+                <td>{{ form.title.label.text }}</td>
+                <td>{{ form.title(class="form-control", cols="80") }}</td>
+                <!-- <input class="form-control" type="text" cols="80" name="title"> -->
             </tr>
             <tr>
-                <td>내용</td>
-                <td><textarea class="form-control" cols="80" rows="10" type="text" name="contents"></textarea></td>
+                <td>{{ form.content.label.text }}</td>
+                <td>{{ form.content(class="form-control", cols="80", rows="10") }}</td>
+                <!-- <textarea class="form-control" cols="80" rows="10" type="text" name="contents"></textarea> -->
             </tr>
             <tr>
                 <td colspan="2"><input type="submit" class="btn btn-outline-dark float-right" value="확인"></td>

@@ -1,43 +1,54 @@
-<header>
-    <div class="container" style="color:black">
-        <img src="/static/images/favicon.png" width="25" class="img-fluid mx-5"/>
-        <a class="text-reset" href="/list?page=1&search=-1&keyword=">
-            <h3><b>소곤소곤 갤러리</b></h3>
-        </a>
-    </div>
+<header class="container text-dark">
+    <img src="/static/images/favicon.png" width="25" class="img-fluid mx-5"/>
+    <a class="text-reset" href="/">
+        <h3><b>소곤소곤 갤러리</b></h3>
+    </a>
 </header>
 
-<nav class="navbar navbar-expand-md navbar-dark" style="background-color: bisque;">
+<nav class="navbar navbar-expand-md navbar-dark mb-2" style="background-color: bisque;">
+    <div class="container" style="justify-content:flex-end">
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#myNavbar">
         <span class="navbar-toggler-icon"></span>
     </button>
 
     <div class="navbar-collapse collapse font-weight-bold" id="myNavbar">
+        <ul class="nav navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="/">자유게시판</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="/">인기글</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-dark" href="/">공지사항</a>
+            </li>
+        </ul>
         <hr class="d-sm-flex d-md-flex d-lg-none" color="gray">
         <ul class="nav navbar-nav ml-auto text-">
             {% if session['logged_in'] %}
             <li class="nav-item">
-                <a class="nav-link text-dark" href="/index">
-                    내 정보
+                <a class="nav-link text-dark shadow-sm" href="/index">
+                    &nbsp;<i class="fa fa-user fa-lg"></i>&nbsp;내 정보
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-dark" href="/index">
-                    로그아웃
+                <a class="nav-link text-dark shadow-sm" href="/logout">
+                    &nbsp;<i class="fa fa-sign-out fa-lg"></i>&nbsp;로그아웃
                 </a>
             </li>
             {% else %}
             <li class="nav-item">
                 <a class="nav-link text-dark shadow-sm" href="/register">
-                    회원가입
+                    &nbsp;<i class="fa fa-sign-in fa-lg"></i>&nbsp;회원가입
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link text-dark shadow-sm" href="/login">
-                    로그인
+                    &nbsp;<i class="fa fa-user fa-lg"></i>&nbsp;로그인
                 </a>
             </li>
             {% endif %}
         </ul>
+    </div>
     </div>
 </nav>
