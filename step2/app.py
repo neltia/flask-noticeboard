@@ -19,7 +19,6 @@ salt = 'neltia'
 now = str(datetime.now())
 myHash = hashlib.sha512(str(now + salt).encode('utf-8')).hexdigest()
 app.config['SECRET_KEY'] = myHash
-
 mongo = PyMongo(app)
 
 
