@@ -38,7 +38,7 @@ def format_datetime(timestamp):
         now_timestamp
     )
     timestamp = datetime.fromtimestamp((int(timestamp) / 1000)) + offset
-    return timestamp.strftime("%Y-%m-%d %H:%M:%S")
+    return timestamp.strftime("%Y-%m-%d %H:%M")
 
 
 @app.route("/")
