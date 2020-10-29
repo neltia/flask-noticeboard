@@ -1,77 +1,125 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container">
-    <div class="form-inline mb-2 float-right">
-        <select name="search" id="search" class="form-control form-control-sm">
-            <option value="-1" {% if search == '' or search == -1 %} selected {% endif %}>검색대상</option>
-            <option value="0" {% if search == 0 %} selected {% endif %}>제목</option>
-            <option value="1" {% if search == 1 %} selected {% endif %}>내용</option>
-            <option value="2" {% if search == 2 %} selected {% endif %}>제목+내용</option>
-            <option value="3" {% if search == 3 %} selected {% endif %}>작성자</option>
-        </select>
-        <input type="text" name="keyword" id="keyword" class="form-control form-control-sm" {% if keyword != ""%} value={{keyword}} {% endif %}>
-        <input type="button" value="검색" class="form-control form-control-sm" onclick="search()">
-        <a href="/write"><button type="button" class="btn btn-outline-secondary btn-sm float-right m-2">
-            글쓰기
-        </button></a>
+<style media="(max-width:800px)">
+    html {
+        font-size: 0.7rem;
+    }
+
+    table {
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-9">
+            <div class="form-inline float-right">
+                <select name="search" id="search" class="form-control form-control-sm">
+                    <option value="-1" {% if search == '' or search == -1 %} selected {% endif %}>검색대상</option>
+                    <option value="0" {% if search == 0 %} selected {% endif %}>제목</option>
+                    <option value="1" {% if search == 1 %} selected {% endif %}>내용</option>
+                    <option value="2" {% if search == 2 %} selected {% endif %}>제목+내용</option>
+                    <option value="3" {% if search == 3 %} selected {% endif %}>작성자</option>
+                </select>
+                <input type="text" name="keyword" id="keyword" class="form-control form-control-sm" 
+                    {% if keyword != ""%}
+                        value={{keyword}} 
+                    {% endif %}
+                >
+                <button type="button"
+                    value="검색" 
+                    class="form-control form-control-sm btn-sm btn-outline-success" 
+                    onclick="search()"
+                    ><i class="fa fa-search"></i>
+                </button>
+            </div>
+        </div>
+        <div class="col-3">
+            <a href="/write">
+                <button type="button" class="btn btn-outline-secondary btn-sm">
+                    글쓰기
+                </button>
+            </a>
+        </div>
     </div>
 
-    <div>
+    <div class="row pt-2">
         <table class="table table-sm table-borered">
             <thead class="text-center">
                 <tr>
-                    <th>번호</th>
+                    <th>#</th>
                     <th>제목</th>
                     <th>작성자</th>
-                    <th>작성일</th>
-                    <th>조회수</th>
-                    <th>등불수</th>
+                    <th>일자</th>
+                    <th>조회</th>
+                    <th>등불</th>
                 </tr>
             </thead>
+
             {% if lists.count() > 0 %}
-                <tbody class="text-center">
-                    {% for item in lists %}
-                    <tr>
-                        <td>{{ item['num'] }}</td>
-                        <td class="text-left"><a class="text-reset"
-                                href="{{  url_for('board_view', idx=item._id)}}">{{ item['title'] }}</a></td>
-                        <td>{{ item['name'] }}</td>
-                        <td>{{ item['date']|formatdatetime }}</td>
-                        <td>{{ item['view'] }}</td>
-                        <td>0</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
+            <tbody class="text-center">
+                {% for item in lists %}
+                <tr>
+                    <td>{{ item['num'] }}</td>
+                    <td class="text-left">
+                        <a class="text-reset" href="{{  url_for('board_view', idx=item._id) }}">
+                            {{ item['title'] }}
+                        </a>
+                    </td>
+                    <td>{{ item['name'] }}</td>
+                    <td>{{ item['date']|formatdatetime }}</td>
+                    <td>{{ item['view'] }}</td>
+                    <td>0</td>
+                </tr>
+                {% endfor %}
+            </tbody>
             {% endif %}
         </table>
+    </div>
+
+    <div class="row justify-content-center">
         {% if lists.count() > 0 %}
-            <div class="text-center">
-                <ul class="pagination justify-content-center">
-                {% if block_start - 1 > 0 %}
-                    <li class="page-item"><a class="page-link" href="{{url_for('main_page', page=block_start-1, search=search, keyword=keyword)}}">이전</a></li>
+        <ul class="pagination pagination-sm">
+            {% if block_start - 1 > 0 %}
+                <li class="page-item">
+                    <a class="page-link" href="{{url_for('main_page', page=block_start-1, search=search, keyword=keyword)}}">이전</a>
+                </li>
+            {% else %}
+                <li class="page-item">
+                    <a class="page-link disabled">이전</a>
+                </li>
+            {% endif %}
+
+            {% for i in range(block_start, block_last + 1) %}
+                {% if i > last_page %}
+                    <li class="page-item d-none d-sm-block">
+                        <a class="page-link disabled">{{ i }}</a>
+                    </li>
                 {% else %}
-                    <li class="page-item"><a class="page-link disabled">이전</a></li>
-                {% endif %}
-        
-                {% for i in range(block_start, block_last + 1) %}
-                    {% if i > last_page %}
-                        <li class="page-item"><a class="page-link disabled">{{ i }}</a></li>
+                    {% if i == page %}
+                        <li class="page-item">
+                            <a class="page-link active text-warning" style="text-decoration: underline;">
+                                <b>{{i}}</b>
+                            </a>
+                        </li>
                     {% else %}
-                        {% if i == page %}
-                            <li class="page-item"><a class="page-link active text-warning">{{i}}</a></li>
-                        {% else %}
-                            <li class="page-item"><a class="page-link" href="{{url_for('main_page', page=i, search=search, keyword=keyword)}}">{{ i }}</a></li>
-                        {% endif %}
+                        <li class="page-item d-none d-sm-block">
+                            <a class="page-link" href="{{url_for('main_page', page=i, search=search, keyword=keyword)}}">{{ i }}</a>
+                        </li>
                     {% endif %}
-                {% endfor %}
-        
-                {% if block_last < last_page %}
-                    <li class="page-item"><a class="page-link" href="{{url_for('main_page', page=block_last+1, search=search, keyword=keyword)}}">다음</a></li>
-                {% else %}
-                    <li class="page-item"><a class="page-link">다음</a></li>
                 {% endif %}
-                </ul>
-            </div>
+            {% endfor %}
+
+            {% if block_last < last_page %}
+                <li class="page-item">
+                    <a class="page-link" href="{{url_for('main_page', page=block_last+1, search=search, keyword=keyword)}}">다음</a>
+                </li>
+            {% else %}
+                <li class="page-item">
+                    <a class="page-link">다음</a>
+                </li>
+            {% endif %}
+        </ul>
         {% endif %}
     </div>
 </div>
@@ -81,7 +129,7 @@
         var val_search = document.getElementById("search").value;
         var val_keyword = document.getElementById("keyword").value;
 
-        if(val_search == "" || val_keyword == "") {
+        if (val_search == "" || val_keyword == "") {
             return false;
         } else {
             self.location.href = "{{url_for('main_page')}}?search=" + val_search + "&keyword=" + val_keyword;
