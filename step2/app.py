@@ -76,9 +76,9 @@ def main_page():
     block_last = math.ceil(block_start + (block_size-1))
 
     return render_template(
-        "index.html", 
-        lists=datas, 
-        limit=limit, 
+        "index.html",
+        lists=datas,
+        limit=limit,
         page=page,
         block_start=block_start,
         block_last=block_last,
@@ -112,7 +112,6 @@ def board_write():
         name = request.form.get("name")
         title = request.form.get("title")
         contents = request.form.get("contents")
-        print(name, title, contents)
 
         board = mongo.db.wt_board
         tot_count = board.count_documents({})
@@ -127,6 +126,7 @@ def board_write():
             "view": 0,
         }
         x = board.insert_one(post)
+        flash("작성되었습니다.")
         return redirect(url_for("board_view", idx=x.inserted_id))
     else:
         return render_template("write.html")
