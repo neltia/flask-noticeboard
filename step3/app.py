@@ -10,6 +10,7 @@ from flask import url_for
 import hashlib
 from flask import flash
 from flask import session
+from functools import wraps
 import time
 import math
 
@@ -27,19 +28,27 @@ salt = 'neltia'
 now = str(datetime.now())
 myHash = hashlib.sha512(str(now + salt).encode('utf-8')).hexdigest()
 app.config['SECRET_KEY'] = myHash
-
 mongo = PyMongo(app)
 
 
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get("id") is None or session.get("id") == "":
+            return redirect(url_for("member_login", next_url=request.url))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 class personForm(FlaskForm):
-    name = StringField("사용자 이름",  [DataRequired()])
-    email = EmailField('이메일 주소', [DataRequired(), Email()])
-    pw = PasswordField("비밀번호",  [DataRequired()])
-    pw2 = PasswordField("비밀번호 확인",  [DataRequired()])
+    name = StringField("사용자 이름", validators=[DataRequired()])
+    email = EmailField('이메일 주소', validators=[DataRequired(), Email()])
+    pw = PasswordField("비밀번호", validators=[DataRequired()])
+    pw2 = PasswordField("비밀번호 확인", validators=[DataRequired()])
 
 
 class writeForm(FlaskForm):
-    title = StringField("제목",  [DataRequired()])
+    title = StringField("제목", validators=[DataRequired()])
     content = StringField("내용", widget=TextArea())
 
 
@@ -127,6 +136,7 @@ def board_view(idx):
 
 
 @app.route("/write", methods=["GET", "POST"])
+@login_required
 def board_write():
     form = writeForm()
     if request.method == "POST":
@@ -167,11 +177,19 @@ def member_new():
         email = request.form.get("email", type=str)
         pass1 = request.form.get("pw", type=str)
         pass2 = request.form.get("pw2", type=str)
-        
+
         if pass1 != pass2:
             flash("아이디나 비밀번호가 올바르지 않습니다.")
             return render_template("register.html", form=form)
+
+        if(2 > len(name) or len(name) > 5):
+            flash("아이디는 2 ~ 5자리 사이로 입력해주세요.")
+            return render_template("register.html", form=form)
         
+        if(len(pass1) < 8):
+            flash("비밀번호는 8자리 이상으로 작성해주세요.")
+            return render_template("register.html", form=form)
+
         cur_utc_time = round(datetime.utcnow().timestamp() * 1000)
         wt_members = mongo.db.wt_members
         post = {
@@ -192,9 +210,16 @@ def member_new():
 @app.route("/login", methods=["GET", "POST"])
 def member_login():
     form = personForm()
-    if request.method == "POST":
+    if request.method == "GET":
+        next_url = request.args.get("next_url", type=str)
+        if next_url is not None:
+            return render_template("login.html", form=form, next_url=next_url)
+        else:
+            return render_template("login.html", form=form)
+    elif request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("pw")
+        next_url = request.form.get("next_url", type=str)
 
         members = mongo.db.wt_members
         data = members.find_one({"email": email})
@@ -208,12 +233,26 @@ def member_login():
                 session["name"] = data.get("name")
                 session["id"] = str(data.get("_id"))
                 session['logged_in'] = True
-                return redirect(url_for("main_page"))
+                if next_url is not None:
+                    return redirect(next_url)
+                else:
+                    return redirect(url_for("main_page"))
             else:
                 flash("아이디나 비밀번호가 올바르지 않습니다.")
                 return redirect(url_for("member_login"))
     else:
         return render_template("login.html", form=form)
+
+
+@app.route("/profile/<mail>")
+def member_profile(mail):
+    if request.method == "GET":
+        if session.get('logged_in'):
+            mail = session["email"].split("@")[0]
+            return render_template("profile.html", mail=mail)
+        else:
+            flash("정보를 볼 권한이 없습니다.")
+            return redirect(url_for("main_page"))
 
 
 @app.route("/logout", methods=["GET", "POST"])

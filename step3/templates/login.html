@@ -11,6 +11,9 @@
                 <main role="main" class="inner cover">
                     <form action="" method="POST" autocomplete="off" role="form">
                         {{ form.csrf_token }}
+                        {% if next_url %}
+                            <input type="hidden" name="next_url" value="{{next_url}}">
+                        {% endif %}
                         <div class="form-group">
                             {{ form.email.label.text }}
                             {{ form.email(class="form-control") }}
