@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<script>
+    $(document).ready(function() {
+        $("#content").summernote({
+            lang: 'ko-KR',
+            focus: true,
+            height: 400,
+            minHeight: null,
+            maxHeight: null    
+        });
+    });
+</script>
+
+<table class="table table-sm table-borered">
+    <form name="form" method="POST" action="/edit/{{ data._id }}">
+        {{ form.csrf_token }}
+        <tbody>
+            <tr>
+                <td colspan="2" class="text-right"><input type="submit"class="btn btn-outline-dark float-right" value="확인"></td>
+            </tr>
+            <tr>
+                <td>작성자</td>
+                <td><input class="form-control" type="text" name="name" value="{{session.get('name')}}" readonly></td>
+            </tr>
+            <tr>
+                <td>{{ form.title.label.text }}</td>
+                <td>{{ form.title(class="form-control", cols="70", value=data.title) }}</td>
+            </tr>
+            <tr>
+                <td>{{ form.content.label.text }}</td>
+                <td><textarea class="form-control" rows="8" id="content" name="contents" placeholder="내용을 입력하세요..">{{data.contents}}</textarea></td>
+            </tr>
+        </tbody>
+    </form>
+</table>
+{% endblock %}
