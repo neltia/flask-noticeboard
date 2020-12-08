@@ -144,7 +144,6 @@ def board_view(idx):
 
 
 @app.route("/write", methods=["GET", "POST"])
-@login_required
 def board_write():
     form = writeForm()
     if request.method == "POST":
@@ -173,8 +172,7 @@ def board_write():
         if session.get('logged_in'):
             return render_template("write.html", form=form, name=session["name"])
         else:
-            flash("회원가입 후 작성할 수 있습니다.")
-            return redirect(url_for("member_new"))
+            return render_template("write.html", form=form, name="ㅇㅇ")
     else:
         abort(404)
 
@@ -228,9 +226,11 @@ def board_delete(idx):
 
 
 @app.route("/comment_write", methods=["POST"])
-@login_required
 def comment_write():
-    if session["id"] is None or session["id"] == "":
+    try:
+        print(session["id"])
+    except:
+        flash("회원가입 후 댓글을 달 수 있습니다.")
         return redirect(url_for("member_login"))
 
     if request.method == "POST":
@@ -251,7 +251,7 @@ def comment_write():
         }
 
         print(post)
-        x = comment.insert_one(post)
+        comment.insert_one(post)
         return redirect(url_for("board_view", idx=root_idx))
     return abort(404)
 
@@ -349,6 +349,7 @@ def member_logout():
     del session["email"]
     session['logged_in'] = False
     return redirect(url_for("member_login"))
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)
