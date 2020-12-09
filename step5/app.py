@@ -13,6 +13,10 @@ from flask import session
 from functools import wraps
 import time
 import math
+from flask import send_from_directory
+from string import digits, ascii_uppercase, ascii_lowercase
+import random
+import os
 
 from flask_wtf import FlaskForm
 from wtforms import StringField
@@ -24,8 +28,10 @@ from wtforms.validators import DataRequired, Email
 # Config setting
 app = Flask(__name__)
 app.config["MONGO_URI"] = "mongodb://localhost:27017/WhisperTalk"
+app.config['MAX_CONTENT_LENGTH'] = 15 * 1024 * 1024
 salt = 'neltia'
 now = str(datetime.now())
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 myHash = hashlib.sha512(str(now + salt).encode('utf-8')).hexdigest()
 app.config['SECRET_KEY'] = myHash
 mongo = PyMongo(app)
@@ -38,6 +44,15 @@ def login_required(f):
             return redirect(url_for("member_login", next_url=request.url))
         return f(*args, **kwargs)
     return decorated_function
+
+
+def allowed_file(filename):
+    return "." in filename and filename.rsplit(".", 1)[1] in ALLOWED_EXTENSIONS
+
+
+def rand_generator(length=8):
+    chars = ascii_lowercase + ascii_uppercase + digits
+    return ''.join(random.sample(chars, length))
 
 
 class personForm(FlaskForm):
@@ -223,6 +238,22 @@ def board_delete(idx):
     else:
         flash("글 삭제 권한이 없습니다.")
     return redirect(url_for("main_page"))
+
+
+@app.route("/upload_image", methods=["POST"])
+def upload_image():
+    if request.method == "POST":
+        img_file = request.files["image"]
+        if img_file and allowed_file(img_file.filename):
+            filename = "{}_{}.jpg".format(str(int(datetime.now().timestamp()) * 1000), rand_generator())
+            savefilepath = os.path.join("/images", filename)
+            img_file.save(savefilepath)
+            return url_for("board_images", filename=filename)
+
+
+@app.route('/images/<filename>')
+def board_images(filename):
+    return send_from_directory('/images', filename)
 
 
 @app.route("/comment_write", methods=["POST"])
