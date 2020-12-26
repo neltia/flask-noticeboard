@@ -17,6 +17,8 @@ from flask import send_from_directory
 from string import digits, ascii_uppercase, ascii_lowercase
 import random
 import os
+import re
+from flask import send_file
 
 from flask_wtf import FlaskForm
 from wtforms import StringField
@@ -31,10 +33,17 @@ app.config["MONGO_URI"] = "mongodb://localhost:27017/WhisperTalk"
 app.config['MAX_CONTENT_LENGTH'] = 15 * 1024 * 1024
 salt = 'neltia'
 now = str(datetime.now())
-ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
+ALLOWED_EXTENSIONS_img = set(['png', 'jpg', 'jpeg', 'gif'])
+ALLOWED_EXTENSIONS_file = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 myHash = hashlib.sha512(str(now + salt).encode('utf-8')).hexdigest()
 app.config['SECRET_KEY'] = myHash
 mongo = PyMongo(app)
+
+
+if not os.path.exists("/images"):
+    os.mkdir("/images")
+if not os.path.exists("/files"):
+    os.mkdir("/files")
 
 
 def login_required(f):
@@ -46,8 +55,21 @@ def login_required(f):
     return decorated_function
 
 
-def allowed_file(filename):
-    return "." in filename and filename.rsplit(".", 1)[1] in ALLOWED_EXTENSIONS
+def allowed_file(filename, types):
+    if types == "img":
+        return "." in filename and filename.rsplit(".", 1)[1] in ALLOWED_EXTENSIONS_img
+    if types == "file":
+        return "." in filename and filename.rsplit(".", 1)[1] in ALLOWED_EXTENSIONS_file
+
+
+def check_filename(filename):
+    reg = re.compile(r'[^A-Za-z0-9_.가-힝-]')
+    for sep in os.path.sep, os.path.altsep:
+        if sep:
+            filename = filename.replace(sep, ' ')
+            print(filename)
+            filename = str(reg.sub('', '_'.join(filename.split()))).strip('._')
+    return filename
 
 
 def rand_generator(length=8):
@@ -150,7 +172,8 @@ def board_view(idx):
                 "contents": data.get("contents"),
                 "date": data.get("date"),
                 "view": data.get("view"),
-                "writer_id": data.get("writer_id", "")
+                "writer_id": data.get("writer_id", ""),
+                "attachfile": data.get("attachfile", "")
             }
             comment = mongo.db.wt_comment
             comments = comment.find({"root_idx": str(data.get("_id"))})
@@ -159,9 +182,18 @@ def board_view(idx):
 
 
 @app.route("/write", methods=["GET", "POST"])
+@login_required
 def board_write():
     form = writeForm()
     if request.method == "POST":
+        filename = None
+        if "attachfile" in request.files:
+            file = request.files["attachfile"]
+            print(file)
+            if file and allowed_file(file.filename, "file"):
+                filename = check_filename(file.filename)
+                file.save("/files/" + filename)
+
         writer_id = session.get("id")
         name = request.form.get("name")
         title = request.form.get("title")
@@ -181,15 +213,14 @@ def board_write():
             "date": cur_utc_time,
             "view": 0,
         }
+
+        if filename is not None:
+            post["attachfile"] = filename
+        
         x = board.insert_one(post)
         return redirect(url_for("board_view", idx=x.inserted_id))
-    elif request.method == "GET":
-        if session.get('logged_in'):
-            return render_template("write.html", form=form, name=session["name"])
-        else:
-            return render_template("write.html", form=form, name="ㅇㅇ")
     else:
-        abort(404)
+        return render_template("write.html", form=form, name=session["name"])
 
 
 @app.route("/edit/<idx>", methods=["GET", "POST"])
@@ -244,7 +275,7 @@ def board_delete(idx):
 def upload_image():
     if request.method == "POST":
         img_file = request.files["image"]
-        if img_file and allowed_file(img_file.filename):
+        if img_file and allowed_file(img_file.filename, "img"):
             filename = "{}_{}.jpg".format(str(int(datetime.now().timestamp()) * 1000), rand_generator())
             savefilepath = os.path.join("/images", filename)
             img_file.save(savefilepath)
@@ -254,6 +285,13 @@ def upload_image():
 @app.route('/images/<filename>')
 def board_images(filename):
     return send_from_directory('/images', filename)
+
+
+@app.route('/files/<filename>')
+def board_files(filename):
+    return send_file('/files/' + filename,
+                    attachment_filename = filename,
+                    as_attachment=True)
 
 
 @app.route("/comment_write", methods=["POST"])
@@ -381,7 +419,9 @@ def member_profile(mail):
     if request.method == "GET":
         if session.get('logged_in'):
             mail = session["email"].split("@")[0]
-            return render_template("profile.html", mail=mail)
+            board = mongo.db.wt_board
+            datas = board.find({"name": session["name"]}).sort("date", -1)
+            return render_template("profile.html", mail=mail, datas=datas)
         else:
             flash("정보를 볼 권한이 없습니다.")
             return redirect(url_for("main_page"))

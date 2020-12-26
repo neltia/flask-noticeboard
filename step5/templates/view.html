@@ -13,17 +13,28 @@
             </button>
         </a>
     {% endif %}
+
     <br><br>
+
     <div class="shadow p-3 mb-5 bg-white rounded" style="min-height: 500px;">
         <hr/>
+        <!-- 제목 -->
         <div name="title">
             <h4>{{ result.title }}</h4>
             <small><b>{{ result.name }}</b></small>
             <br><p>{{ result.date|formatdatetime }} 조회 {{ result.view }}</span></p>
         </div>
 
+        <!-- 첨부 파일 -->
         <hr/>
-        
+        {% if result.attachfile %}
+        <div>
+            첨부파일: 
+            <a href="{{url_for('board_files', filename=result.attachfile)}}">{{ result.attachfile }}</a>
+        </div>
+        <hr/>
+
+        {% endif %}
         <div name="contents">
             {% autoescape false %}
                 {{ result.contents }}

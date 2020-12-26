@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<script>
+<script type="text/javascript">
     $(document).ready(function() {
         $("#content").summernote({
             lang: 'ko-KR',
@@ -17,6 +17,17 @@
                     }
                 }
             }
+        });
+
+        $("#customFile").on('change',function(){
+            if(window.FileReader){
+                var filename = $(this)[0].files[0].name;
+            } else {
+                var filename = $(this).val.split('/').pop().split('\\').pop();
+            }
+
+            //filename insert
+            $('#userfile').val(filename);
         });
     });
 
@@ -42,7 +53,7 @@
 </script>
 
 <table class="table table-sm table-borered">
-    <form name="form" method="POST" action="">
+    <form name="form" method="POST" action="/write" enctype="multipart/form-data">
         {{ form.csrf_token }}
         <tbody>
             <tr>
@@ -59,6 +70,17 @@
             <tr>
                 <td>{{ form.content.label.text }}</td>
                 <td>{{ form.content(_id="content") }}</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td colspan="2" class="custom-file">
+                    <input type="file" class="custom-file-input" id="customFile" name="attachfile">
+                    <label class="custom-file-label" for="customFile">파일선택</label>
+                </td>
+            </tr>
+            <tr>
+                <td>목록</td>
+                <td><input type="text" id="userfile" class="form-control" disabled=""></td>
             </tr>
         </tbody>
     </form>
