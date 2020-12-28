@@ -20,14 +20,8 @@
         });
 
         $("#customFile").on('change',function(){
-            if(window.FileReader){
-                var filename = $(this)[0].files[0].name;
-            } else {
-                var filename = $(this).val.split('/').pop().split('\\').pop();
-            }
-
             //filename insert
-            $('#userfile').val(filename);
+            $(this).next('.custom-file-label').html(event.target.files[0].name);
         });
     });
 
@@ -68,10 +62,6 @@
                 <td>{{ form.title(class="form-control", cols="80") }}</td>
             </tr>
             <tr>
-                <td>{{ form.content.label.text }}</td>
-                <td>{{ form.content(_id="content") }}</td>
-            </tr>
-            <tr>
                 <td></td>
                 <td colspan="2" class="custom-file">
                     <input type="file" class="custom-file-input" id="customFile" name="attachfile">
@@ -79,8 +69,8 @@
                 </td>
             </tr>
             <tr>
-                <td>목록</td>
-                <td><input type="text" id="userfile" class="form-control" disabled=""></td>
+                <td>{{ form.content.label.text }}</td>
+                <td>{{ form.content(_id="content") }}</td>
             </tr>
         </tbody>
     </form>
