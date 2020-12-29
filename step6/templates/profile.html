@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <hr/>
+    <div name="title">
+        <h3>{{ session['name'] }} 님</h3>
+    </div>
+    <hr />
+        {% if datas.count() > 0 %}
+        <h5>작성한 글:</h4><br>
+        <table class="table table-sm table-borered table-hover">
+            <thead class="table-warning text-center">
+                <tr>
+                    <th>#</th>
+                    <th>제목</th>
+                    <th>작성자</th>
+                    <th>일자</th>
+                </tr>
+            </thead>
+
+            <tbody class="text-center">
+                {% for data in datas %}
+                <tr>
+                    <td>{{ data["num"] }}</td>
+                    <td class="text-left">
+                        <a class="text-reset" href="{{  url_for('board_view', idx=data._id) }}">
+                            {{ data["title"] }}
+                        </a>
+                    </td>
+                    <td>{{ data["name"] }}</td>
+                    <td>{{ data["date"]|formatdatetime }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        <h5>작성한 글: 없음</h4><br>
+</div>
+{% endblock %}
