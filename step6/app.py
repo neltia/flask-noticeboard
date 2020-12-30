@@ -40,10 +40,8 @@ app.config['SECRET_KEY'] = myHash
 mongo = PyMongo(app)
 
 
-if not os.path.exists("/images"):
-    os.mkdir("/images")
-if not os.path.exists("/files"):
-    os.mkdir("/files")
+if not os.path.exists("./static/files"):
+    os.mkdir("./static/files")
 
 
 def login_required(f):
@@ -191,7 +189,7 @@ def board_write():
             print(file)
             if file and allowed_file(file.filename, "file"):
                 filename = check_filename(file.filename)
-                file.save("/files/" + filename)
+                file.save("./static/files/" + filename)
 
         writer_id = session.get("id")
         name = request.form.get("name")
@@ -214,7 +212,6 @@ def board_write():
 
         if filename is not None:
             post["attachfile"] = filename
-        
         x = board.insert_one(post)
         return redirect(url_for("board_view", idx=x.inserted_id))
     else:
@@ -273,21 +270,24 @@ def board_delete(idx):
 def upload_image():
     if request.method == "POST":
         img_file = request.files["image"]
+        print(img_file)
         if img_file and allowed_file(img_file.filename, "img"):
             filename = "{}_{}.jpg".format(str(int(datetime.now().timestamp()) * 1000), rand_generator())
-            savefilepath = os.path.join("/images", filename)
+            print(filename)
+            savefilepath = os.path.join("./static/images", filename)
+            print(savefilepath)
             img_file.save(savefilepath)
             return url_for("board_images", filename=filename)
 
 
 @app.route('/images/<filename>')
 def board_images(filename):
-    return send_from_directory('/images', filename)
+    return send_from_directory('./static/images', filename)
 
 
 @app.route('/files/<filename>')
 def board_files(filename):
-    return send_file('/files/' + filename,
+    return send_file('./static/files/' + filename,
                     attachment_filename = filename,
                     as_attachment=True)
 

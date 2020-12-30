@@ -36,7 +36,9 @@
             data: data,
             type: "post",
             success: function(url) {
-                var image = $('<img>').attr('src', url).css("max-width", "900px");
+                var image = $('<img>').attr({
+                    'src' : url,
+                    'class' : "img-fluid"});
                 $('#content').summernote("insertNode", image[0]);
             },
             error: function(data) {
