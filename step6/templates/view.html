@@ -20,7 +20,13 @@
         <hr/>
         <!-- 제목 -->
         <div name="title">
-            <h4>{{ result.title }}</h4>
+            <h4 style="
+                text-overflow:ellipsis; 
+                overflow:hidden; 
+                white-space: nowrap;
+                ">
+                {{ result.title }}
+            </h4>
             <small><b>{{ result.name }}</b></small>
             <br><p>{{ result.date|formatdatetime }}</span></p>
         </div>
@@ -35,7 +41,7 @@
         <hr/>
 
         {% endif %}
-        <div name="contents">
+        <div name="contents" style="height: 500px; text-overflow:ellipsis; overflow:auto;">
             {% autoescape false %}
                 {{ result.contents }}
             {% endautoescape %}

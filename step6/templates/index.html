@@ -8,6 +8,8 @@
     table {
         font-size: 0.9rem;
     }
+
+    
 </style>
 
 <div class="container-fluid">
@@ -46,7 +48,7 @@
     </div>
 
     <div class="row pt-2">
-        <table class="table table-sm table-borered table-hover">
+        <table class="table table-sm table-borered table-hover" style="table-layout:fixed">
             <thead class="table-warning text-center">
                 <tr>
                     <th>#</th>
@@ -61,7 +63,7 @@
                 {% for item in lists %}
                 <tr>
                     <td>{{ item['num'] }}</td>
-                    <td class="text-left">
+                    <td class="text-left" width="150" height="30" style="text-overflow:ellipsis; overflow:hidden; white-space: nowrap;">
                         <a class="text-reset" href="{{  url_for('board_view', idx=item._id) }}">
                             {{ item['title'] }}
                         </a>
