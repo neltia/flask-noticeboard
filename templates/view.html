@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    {% if session["id"] == result.writer_id %}
+        <a href="{{url_for('board_edit', idx=result.id)}}">
+            <button type="button" class="btn btn-outline-secondary btn-sm">
+                수정
+            </button>
+        </a>
+        <a href="{{url_for('board_delete', idx=result.id)}}">
+            <button type="button" class="btn btn-outline-secondary btn-sm">
+                삭제
+            </button>
+        </a>
+    {% endif %}
+
+    <br><br>
+
+    <div class="shadow p-3 mb-5 bg-white rounded" style="min-height: 500px;">
+        <hr/>
+        <!-- 제목 -->
+        <div name="title">
+            <h4 style="
+                text-overflow:ellipsis; 
+                overflow:hidden; 
+                white-space: nowrap;
+                ">
+                {{ result.title }}
+            </h4>
+            <small><b>{{ result.name }}</b></small>
+            <br><p>{{ result.date|formatdatetime }}</span></p>
+        </div>
+
+        <!-- 첨부 파일 -->
+        <hr/>
+        {% if result.attachfile %}
+        <div>
+            첨부파일: 
+            <a href="{{url_for('board_files', filename=result.attachfile)}}">{{ result.attachfile }}</a>
+        </div>
+        <hr/>
+
+        {% endif %}
+        <div name="contents" style="height: 500px; text-overflow:ellipsis; overflow:auto;">
+            {% autoescape false %}
+                {{ result.contents }}
+            {% endautoescape %}
+        </div>
+    </div>
+
+    <div class="shadow">
+        <form id="commentForm" name="commentForm" action="{{url_for('comment_write')}}" method="post">
+            <input type="hidden" name="root_idx" value="{{result.id}}">
+            <div>
+                <table class="table">
+                    <i class="fa fa-commenting-o ml-2"></i><strong class="ml-2">댓글</strong><span id="cCnt"> {{comments.count()}}</span>
+                    <tr>
+                        <td>
+                            <textarea class="form-control" cols="80" rows="3" id="comment" name="comment" placeholder="댓글을 입력하세요"></textarea>
+                            <br>
+                        </td>
+                        <td>
+                            <input type="submit" class="btn btn-outline-dark" value="등록">
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </form>
+        
+        {% if comments.count() > 0 %}
+            {% for c in comments %}
+                <div class="">
+                    <table class="table">
+                        <tr>
+                            <td width="100"><h6>{{c.name}}</h6></td>
+                            <td>{{c.comment}}</td>
+                            <td class="text-right" width="200">{{c.date|formatdatetime}} <a href="{{url_for('comment_delete', idx=c['_id'])}}" class="text-reset"><i class="fa fa-minus-square"></i></a></td>
+                        </tr>
+                    </table>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
