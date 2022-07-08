@@ -9,7 +9,7 @@
         font-size: 0.9rem;
     }
 
-    
+
 </style>
 
 <div class="container-fluid">
@@ -23,14 +23,14 @@
                     <option value="2" {% if search == 2 %} selected {% endif %}>제목+내용</option>
                     <option value="3" {% if search == 3 %} selected {% endif %}>작성자</option>
                 </select>
-                <input type="text" name="keyword" id="keyword" class="form-control form-control-sm" 
+                <input type="text" name="keyword" id="keyword" class="form-control form-control-sm"
                     {% if keyword != ""%}
-                        value={{keyword}} 
+                        value={{keyword}}
                     {% endif %}
                 >
                 <button type="button"
-                    value="검색" 
-                    class="form-control form-control-sm btn-sm btn-outline-success" 
+                    value="검색"
+                    class="form-control form-control-sm btn-sm btn-outline-success"
                     onclick="search()"
                     ><i class="fa fa-search"></i>
                 </button>
@@ -58,7 +58,7 @@
                 </tr>
             </thead>
 
-            {% if lists.count() > 0 %}
+            {% if tot_count > 0 %}
             <tbody class="text-center">
                 {% for item in lists %}
                 <tr>
@@ -78,7 +78,7 @@
     </div>
 
     <div class="row justify-content-center">
-        {% if lists.count() > 0 %}
+        {% if tot_count > 0 %}
         <ul class="pagination pagination-sm">
             {% if block_start - 1 > 0 %}
                 <li class="page-item">

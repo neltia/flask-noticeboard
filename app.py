@@ -1,56 +1,25 @@
+# lib
 from flask import Flask
 from flask import render_template
-from flask import request
-from flask_pymongo import PyMongo
-from bson.objectid import ObjectId
-from datetime import datetime
-from flask import abort
-from flask import redirect
-from flask import url_for
-import hashlib
-from flask import flash
-from flask import session
-from functools import wraps
+from flask import send_from_directory
 import time
 import math
-from flask import send_from_directory
+from public_lib import *
 from string import digits, ascii_uppercase, ascii_lowercase
 import random
 import os
 import re
-from flask import send_file
 
-from flask_wtf import FlaskForm
-from wtforms import StringField
-from wtforms import PasswordField
-from wtforms.widgets import TextArea
-from wtforms.fields.html5 import EmailField
-from wtforms.validators import DataRequired, Email
+# decorated_lib
+from decorated_lib import login_required
 
 # Config setting
-app = Flask(__name__)
-app.config["MONGO_URI"] = "mongodb://localhost:27017/WhisperTalk"
-app.config['MAX_CONTENT_LENGTH'] = 15 * 1024 * 1024
-salt = 'neltia'
-now = str(datetime.now())
-ALLOWED_EXTENSIONS_img = set(['png', 'jpg', 'jpeg', 'gif'])
-ALLOWED_EXTENSIONS_file = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
-myHash = hashlib.sha512(str(now + salt).encode('utf-8')).hexdigest()
-app.config['SECRET_KEY'] = myHash
+from config import app
 mongo = PyMongo(app)
 
 
 if not os.path.exists("./static/files"):
     os.mkdir("./static/files")
-
-
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if session.get("id") is None or session.get("id") == "":
-            return redirect(url_for("member_login", next_url=request.url))
-        return f(*args, **kwargs)
-    return decorated_function
 
 
 def allowed_file(filename, types):
@@ -136,7 +105,7 @@ def main_page():
     board = mongo.db.wt_board
     datas = board.find(query).sort("date", -1).skip((page-1) * limit).limit(limit)
 
-    tot_count = board.count_documents(query)
+    tot_count = len(list(board.find({})))
     last_page_num = math.ceil(tot_count / limit)
 
     block_size = 5
@@ -153,7 +122,8 @@ def main_page():
         block_last=block_last,
         last_page=last_page_num,
         search=search,
-        keyword=keyword
+        keyword=keyword,
+        tot_count=tot_count
     )
 
 
@@ -198,7 +168,7 @@ def board_write():
         print(name, title, contents)
 
         board = mongo.db.wt_board
-        tot_count = board.count_documents({})
+        tot_count = len(list(board.find({})))
         cur_utc_time = round(datetime.utcnow().timestamp() * 1000)
         board = mongo.db.wt_board
         post = {
@@ -215,7 +185,7 @@ def board_write():
         x = board.insert_one(post)
         return redirect(url_for("board_view", idx=x.inserted_id))
     else:
-        return render_template("write.html", form=form, name=session["name"])
+        return render_template("write.html", form=form, name=session["name"], tot_count=tot_count)
 
 
 @app.route("/edit/<idx>", methods=["GET", "POST"])
@@ -353,7 +323,7 @@ def member_new():
         if(2 > len(name) or len(name) > 6):
             flash("아이디는 2 ~ 6자리 사이로 입력해주세요.")
             return render_template("register.html", form=form)
-        
+
         if(len(pass1) < 8):
             flash("비밀번호는 8자리 이상으로 작성해주세요.")
             return render_template("register.html", form=form)
@@ -366,7 +336,7 @@ def member_new():
             "pass": hashlib.sha512(pass1.encode()).hexdigest(),
             "registerdate": cur_utc_time
         }
-        
+
         wt_members.insert_one(post)
         return redirect(url_for("member_login"))
     else:
