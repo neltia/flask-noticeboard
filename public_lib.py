@@ -1,4 +1,6 @@
 # flask
+from flask import Flask
+from flask import render_template
 from flask import session
 from flask import url_for
 from flask import abort
@@ -18,6 +20,20 @@ from wtforms.validators import DataRequired, Email
 # db
 from flask_pymongo import PyMongo
 from bson.objectid import ObjectId
+import hashlib
 
 # data processing
 from datetime import datetime
+import logging
+
+
+class personForm(FlaskForm):
+    name = StringField("사용자 이름", validators=[DataRequired()])
+    email = EmailField('이메일 주소', validators=[DataRequired(), Email()])
+    pw = PasswordField("비밀번호", validators=[DataRequired()])
+    pw2 = PasswordField("비밀번호 확인", validators=[DataRequired()])
+
+
+class writeForm(FlaskForm):
+    title = StringField("제목", validators=[DataRequired()])
+    content = StringField("내용", widget=TextArea())

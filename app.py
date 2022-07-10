@@ -1,27 +1,30 @@
 # lib
-from flask import Flask
-from flask import render_template
-from flask import send_from_directory
-import time
-import math
 from public_lib import *
+from flask import send_from_directory
 from string import digits, ascii_uppercase, ascii_lowercase
 import random
 import os
 import re
-
+import time
+import math
 # decorated_lib
 from decorated_lib import login_required
+# views
+from views import users
 
-# Config setting
+
+# app set
 from config import app
 mongo = PyMongo(app)
-
-
+app.register_blueprint(users.blueprint)
+# Config setting
+ALLOWED_EXTENSIONS_img = set(['png', 'jpg', 'jpeg', 'gif'])
+ALLOWED_EXTENSIONS_file = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 if not os.path.exists("./static/files"):
     os.mkdir("./static/files")
 
 
+# check expression
 def allowed_file(filename, types):
     if types == "img":
         return "." in filename and filename.rsplit(".", 1)[1] in ALLOWED_EXTENSIONS_img
@@ -44,18 +47,7 @@ def rand_generator(length=8):
     return ''.join(random.sample(chars, length))
 
 
-class personForm(FlaskForm):
-    name = StringField("사용자 이름", validators=[DataRequired()])
-    email = EmailField('이메일 주소', validators=[DataRequired(), Email()])
-    pw = PasswordField("비밀번호", validators=[DataRequired()])
-    pw2 = PasswordField("비밀번호 확인", validators=[DataRequired()])
-
-
-class writeForm(FlaskForm):
-    title = StringField("제목", validators=[DataRequired()])
-    content = StringField("내용", widget=TextArea())
-
-
+# handler
 @app.errorhandler(404)
 def page_not_found(error):
     return render_template("page_not.html"), 404
@@ -66,6 +58,7 @@ def internal_error(error):
     return render_template("page_not.html"), 500
 
 
+# filter
 @app.template_filter("formatdatetime")
 def format_datetime(timestamp):
     if timestamp is None:
@@ -78,6 +71,7 @@ def format_datetime(timestamp):
     return timestamp.strftime("%Y-%m-%d %H:%M")
 
 
+# board
 @app.route("/")
 @app.route("/list")
 def main_page():
@@ -305,101 +299,6 @@ def comment_delete(idx):
     return """<script>
         window.location = document.referrer;
         </script>"""
-
-
-@app.route("/register", methods=["GET", "POST"])
-def member_new():
-    form = personForm()
-    if request.method == "POST":
-        name = request.form.get("name", type=str)
-        email = request.form.get("email", type=str)
-        pass1 = request.form.get("pw", type=str)
-        pass2 = request.form.get("pw2", type=str)
-
-        if pass1 != pass2:
-            flash("아이디나 비밀번호가 올바르지 않습니다.")
-            return render_template("register.html", form=form)
-
-        if(2 > len(name) or len(name) > 6):
-            flash("아이디는 2 ~ 6자리 사이로 입력해주세요.")
-            return render_template("register.html", form=form)
-
-        if(len(pass1) < 8):
-            flash("비밀번호는 8자리 이상으로 작성해주세요.")
-            return render_template("register.html", form=form)
-
-        cur_utc_time = round(datetime.utcnow().timestamp() * 1000)
-        wt_members = mongo.db.wt_members
-        post = {
-            "name": name,
-            "email": email,
-            "pass": hashlib.sha512(pass1.encode()).hexdigest(),
-            "registerdate": cur_utc_time
-        }
-
-        wt_members.insert_one(post)
-        return redirect(url_for("member_login"))
-    else:
-        return render_template("register.html", form=form)
-
-
-@app.route("/login", methods=["GET", "POST"])
-def member_login():
-    form = personForm()
-    if request.method == "GET":
-        next_url = request.args.get("next_url", type=str)
-        if next_url is not None:
-            return render_template("login.html", form=form, next_url=next_url)
-        else:
-            return render_template("login.html", form=form)
-    elif request.method == "POST":
-        email = request.form.get("email")
-        password = request.form.get("pw")
-        next_url = request.form.get("next_url", type=str)
-
-        members = mongo.db.wt_members
-        data = members.find_one({"email": email})
-
-        if data is None:
-            flash("회원정보가 없습니다.")
-            return redirect(url_for("member_new"))
-        else:
-            if data.get("pass") == hashlib.sha512(password.encode()).hexdigest():
-                session["email"] = email
-                session["name"] = data.get("name")
-                session["id"] = str(data.get("_id"))
-                session['logged_in'] = True
-                if next_url is not None:
-                    return redirect(next_url)
-                else:
-                    return redirect(url_for("main_page"))
-            else:
-                flash("아이디나 비밀번호가 올바르지 않습니다.")
-                return redirect(url_for("member_login"))
-    else:
-        return render_template("login.html", form=form)
-
-
-@app.route("/profile/<mail>")
-def member_profile(mail):
-    if request.method == "GET":
-        if session.get('logged_in'):
-            mail = session["email"].split("@")[0]
-            board = mongo.db.wt_board
-            datas = board.find({"name": session["name"]}).sort("date", -1)
-            return render_template("profile.html", mail=mail, datas=datas)
-        else:
-            flash("정보를 볼 권한이 없습니다.")
-            return redirect(url_for("main_page"))
-
-
-@app.route("/logout", methods=["GET", "POST"])
-def member_logout():
-    del session["name"]
-    del session["id"]
-    del session["email"]
-    session['logged_in'] = False
-    return redirect(url_for("member_login"))
 
 
 if __name__ == "__main__":
