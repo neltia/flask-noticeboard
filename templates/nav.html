@@ -19,23 +19,23 @@
         <ul class="nav navbar-nav ml-auto text-">
             {% if session['logged_in'] %}
             <li class="nav-item">
-                <a class="nav-link text-dark shadow-sm" href="{{url_for('member_profile', mail=session['email'].split('@')[0])}}">
+                <a class="nav-link text-dark shadow-sm" href="{{url_for('users.member_profile', mail=session['email'].split('@')[0])}}">
                     &nbsp;<i class="fa fa-user fa-lg"></i>&nbsp;내 정보
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-dark shadow-sm" href="/logout">
+                <a class="nav-link text-dark shadow-sm" href="{{url_for('users.member_logout')}}">
                     &nbsp;<i class="fa fa-sign-out fa-lg"></i>&nbsp;로그아웃
                 </a>
             </li>
             {% else %}
             <li class="nav-item">
-                <a class="nav-link text-dark shadow-sm" href="/login">
+                <a class="nav-link text-dark shadow-sm" href="{{url_for('users.member_login')}}">
                     &nbsp;<i class="fa fa-user fa-lg"></i>&nbsp;로그인
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-dark shadow-sm" href="/register">
+                <a class="nav-link text-dark shadow-sm" href="{{url_for('users.member_new')}}">
                     &nbsp;<i class="fa fa-sign-in fa-lg"></i>&nbsp;회원가입
                 </a>
             </li>

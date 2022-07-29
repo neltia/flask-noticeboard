@@ -38,7 +38,7 @@
         </div>
         <div class="col-3">
             {% if session['logged_in'] %}
-            <a href="/write">
+            <a href="{{url_for('board.board_write')}}">
                 <button type="button" class="btn btn-outline-secondary btn-sm">
                     글쓰기
                 </button>
@@ -64,7 +64,7 @@
                 <tr>
                     <td>{{ item['num'] }}</td>
                     <td class="text-left" width="150" height="30" style="text-overflow:ellipsis; overflow:hidden; white-space: nowrap;">
-                        <a class="text-reset" href="{{  url_for('board_view', idx=item._id) }}">
+                        <a class="text-reset" href="{{url_for('board_view', idx=item._id)}}">
                             {{ item['title'] }}
                         </a>
                     </td>
@@ -82,7 +82,7 @@
         <ul class="pagination pagination-sm">
             {% if block_start - 1 > 0 %}
                 <li class="page-item">
-                    <a class="page-link" href="{{url_for('main_page', page=block_start-1, search=search, keyword=keyword)}}">이전</a>
+                    <a class="page-link" href="{{url_for('board.main_page', page=block_start-1, search=search, keyword=keyword)}}">이전</a>
                 </li>
             {% else %}
                 <li class="page-item">
@@ -104,7 +104,7 @@
                         </li>
                     {% else %}
                         <li class="page-item">
-                            <a class="page-link" href="{{url_for('main_page', page=i, search=search, keyword=keyword)}}">{{ i }}</a>
+                            <a class="page-link" href="{{url_for('board.main_page', page=i, search=search, keyword=keyword)}}">{{ i }}</a>
                         </li>
                     {% endif %}
                 {% endif %}
@@ -112,7 +112,7 @@
 
             {% if block_last < last_page %}
                 <li class="page-item">
-                    <a class="page-link" href="{{url_for('main_page', page=block_last+1, search=search, keyword=keyword)}}">다음</a>
+                    <a class="page-link" href="{{url_for('board.main_page', page=block_last+1, search=search, keyword=keyword)}}">다음</a>
                 </li>
             {% else %}
                 <li class="page-item">
@@ -132,7 +132,7 @@
         if (val_search == "" || val_keyword == "") {
             return false;
         } else {
-            self.location.href = "{{url_for('main_page')}}?search=" + val_search + "&keyword=" + val_keyword;
+            self.location.href = "{{url_for('board.main_page')}}?search=" + val_search + "&keyword=" + val_keyword;
         }
     }
 </script>
